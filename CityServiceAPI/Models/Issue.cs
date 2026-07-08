@@ -25,7 +25,6 @@ public partial class Issue
 
     public virtual ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 
-    public virtual Category Category { get; set; } = null!;
-
-    public virtual User Citizen { get; set; } = null!;
+    public virtual Category? Category { get; set; }
+    public virtual User? Citizen { get; set; }
 }

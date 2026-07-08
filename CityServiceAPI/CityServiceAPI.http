@@ -1,6 +1,22 @@
 @CityServiceAPI_HostAddress = http://localhost:5065
 
-GET {{CityServiceAPI_HostAddress}}/weatherforecast/
+### Tüm Sorunları Getir (GET İstediği)
+GET {{CityServiceAPI_HostAddress}}/api/issues
 Accept: application/json
 
-###
+### Yeni Bir Sorun Ekle (POST İstediği)
+POST {{CityServiceAPI_HostAddress}}/api/issues
+Content-Type: application/json
+
+{
+  "citizenId": 1,
+  "categoryId": 1,
+  "title": "Park aydınlatması çalışmıyor",
+  "description": "Gece saatlerinde park tamamen karanlık kalıyor, çocuklar için güvenlik riski oluşturuyor.",
+  "locationData": "Özgürlük Mahallesi, Fatih Caddesi, Çayırova"
+}
+
+### Sorunu Personele Ata (POST İstediği)
+# 2 numaralı sorunu (Park aydınlatması), 2 numaralı personele (Mehmet Usta) atıyoruz.
+POST {{CityServiceAPI_HostAddress}}/api/issues/2/assign/2
+Content-Type: application/json

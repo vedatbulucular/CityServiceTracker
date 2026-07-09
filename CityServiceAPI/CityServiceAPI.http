@@ -28,3 +28,19 @@ DELETE {{CityServiceAPI_HostAddress}}/api/issues/1
 ### Tüm Kategorileri Getir (GET İstediği)
 GET {{CityServiceAPI_HostAddress}}/api/categories
 Accept: application/json
+
+### Tüm Kullanıcıları Getir (GET İstediği)
+GET {{CityServiceAPI_HostAddress}}/api/users
+Accept: application/json
+
+### Sisteme Yeni Bir Personel Ekle (POST İstediği)
+POST {{CityServiceAPI_HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "firstName": "Ayşe",
+  "lastName": "Kaya",
+  "email": "ayse.kaya@belediye.gov.tr",
+  "passwordHash": "gizlisifre123",
+  "role": "Staff"
+}

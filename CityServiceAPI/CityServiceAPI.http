@@ -16,10 +16,11 @@ Content-Type: application/json
   "locationData": "Özgürlük Mahallesi, Fatih Caddesi, Çayırova"
 }
 
-### Sorunu Personele Ata (POST İstediği)
-# 2 numaralı sorunu (Park aydınlatması), 2 numaralı personele (Mehmet Usta) atıyoruz.
+### Sorunu Personele Ata (POST İstediği) - KİLİT AÇIK
+# 2 numaralı sorunu, 2 numaralı personele atıyoruz
 POST {{CityServiceAPI_HostAddress}}/api/issues/2/assign/2
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxMDAyIiwiZW1haWwiOiJheXNlLmtheWFAYmVsZWRpeWUuZ292LnRyIiwicm9sZSI6IlN0YWZmIiwibmJmIjoxNzgzNTgyNTE1LCJleHAiOjE3ODM1ODYxMTUsImlhdCI6MTc4MzU4MjUxNSwiaXNzIjoiQ2l0eVNlcnZpY2VBUEkiLCJhdWQiOiJDaXR5U2VydmljZUNsaWVudHMifQ.qyoOCquvNMEXUh8JFjrWWmnfpL2j3-FrddQB0yxUxgQ
 
 ### Bir Sorunu Sil (DELETE İsteği)
 # 1 numaralı sorunu (Yolda büyük bir çukur var) sistemden siliyoruz.
@@ -43,4 +44,26 @@ Content-Type: application/json
   "email": "ayse.kaya@belediye.gov.tr",
   "passwordHash": "gizlisifre123",
   "role": "Staff"
+}
+
+### Bir Soruna Fotoğraf Ekle (POST İstediği)
+# 2 numaralı soruna test.jpg dosyasını yüklüyoruz
+POST {{CityServiceAPI_HostAddress}}/api/issues/2/upload-image
+Content-Type: multipart/form-data; boundary=----MyGreatBoundary
+
+------MyGreatBoundary
+Content-Disposition: form-data; name="file"; filename="test.jpg"
+Content-Type: image/jpeg
+
+< ./test.jpg
+------MyGreatBoundary--
+
+### Sisteme Giriş Yap ve Token Al (POST)
+# Daha önce eklediğimiz "Ayşe Kaya" (Staff) kullanıcısının bilgileriyle giriş yapıyoruz
+POST {{CityServiceAPI_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ayse.kaya@belediye.gov.tr",
+  "password": "gizlisifre123"
 }

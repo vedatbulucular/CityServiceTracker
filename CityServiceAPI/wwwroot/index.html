@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bölge Hizmet Yönetimi - Çayırova</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>Yeni Sorun Bildir</h4>
+                    <p class="mb-0">Bölgemizdeki sorunları hızlıca yetkililere iletin</p>
+                </div>
+                <div class="card-body">
+                    <form id="issueForm">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Sorun Başlığı</label>
+                            <input type="text" class="form-control" id="title" placeholder="Örn: Yolda büyük bir çukur var" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Detaylı Açıklama</label>
+                            <textarea class="form-control" id="description" rows="3" placeholder="Sorunu detaylıca anlatın..." required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Kategori</label>
+                            <select class="form-select" id="category" required>
+                                <option value="" selected disabled>Kategori Seçin...</option>
+                                <option value="1">Altyapı (Pothole vb.)</option>
+                                <option value="2">Park ve Bahçeler</option>
+                                <option value="3">Temizlik</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="imageFile" class="form-label">Fotoğraf Ekle (İsteğe Bağlı)</label>
+                            <input class="form-control" type="file" id="imageFile" accept="image/jpeg, image/png">
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">Bildirimi Gönder</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <h3 class="text-secondary border-bottom pb-2">Güncel Bildirimler</h3>
+        </div>
+    </div>
+
+    <div class="row" id="issuesContainer">
+        <div class="text-center text-muted">Kayıtlar yükleniyor...</div>
+    </div>
+</div>
+
+<script>
+    // 1. VERİLERİ API'DEN ÇEKİP EKRANA ÇİZEN FONKSİYON (GET)
+    async function loadIssues() {
+        try {
+            const response = await fetch('/api/issues');
+            if (response.ok) {
+                const issues = await response.json();
+                const container = document.getElementById('issuesContainer');
+                
+                // İçeriyi temizle
+                container.innerHTML = ''; 
+
+                // Eğer hiç kayıt yoksa
+                if(issues.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">Henüz bildirilmiş bir sorun bulunmuyor.</div>';
+                    return;
+                }
+
+                // API'den gelen her bir sorun (issue) için Bootstrap Kartı oluştur
+                issues.forEach(issue => {
+                    // Duruma göre renkli etiket (Badge) belirle
+                    let statusBadge = '';
+                    if(issue.status === 'Pending') statusBadge = '<span class="badge bg-warning text-dark">Beklemede</span>';
+                    else if(issue.status === 'InProgress') statusBadge = '<span class="badge bg-info text-dark">İşlemde</span>';
+                    else statusBadge = '<span class="badge bg-success">Tamamlandı</span>';
+
+                    // Fotoğraf varsa URL'yi kullan, yoksa gri bir 'Görsel Yok' alanı göster
+                    const imageHtml = issue.imageUrl 
+                        ? `<img src="${issue.imageUrl}" class="card-img-top" alt="Sorun Görseli" style="height: 200px; object-fit: cover;">` 
+                        : `<div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">Görsel Yok</div>`;
+
+                    // Tarihi Türkiye formatına çevir
+                    const formattedDate = new Date(issue.reportedAt).toLocaleDateString('tr-TR');
+
+                    // Kartın HTML şablonu
+                    const card = `
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm border-0">
+                                ${imageHtml}
+                                <div class="card-body">
+                                    <h5 class="card-title">${issue.title}</h5>
+                                    <p class="card-text text-muted small">${issue.description}</p>
+                                    <p class="card-text"><small><strong>Konum:</strong> ${issue.locationData}</small></p>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between align-items-center bg-white border-top-0">
+                                    ${statusBadge}
+                                    <small class="text-muted">${formattedDate}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Oluşturulan kartı sayfaya ekle
+                    container.innerHTML += card;
+                });
+            }
+        } catch (error) {
+            console.error("Veriler çekilirken hata oluştu:", error);
+            document.getElementById('issuesContainer').innerHTML = '<div class="text-center text-danger">Sunucuya bağlanılamadı.</div>';
+        }
+    }
+
+    // Sayfa ilk açıldığında verileri otomatik yükle
+    window.onload = loadIssues;
+
+    // 2. YENİ KAYIT EKLEME FONKSİYONU (POST)
+    document.getElementById('issueForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const categoryId = document.getElementById('category').value;
+        const imageFile = document.getElementById('imageFile').files[0];
+
+        const issueData = {
+            citizenId: 1, 
+            categoryId: parseInt(categoryId),
+            title: title,
+            description: description,
+            locationData: "Çayırova" 
+        };
+
+        try {
+            const response = await fetch('/api/issues', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(issueData)
+            });
+
+            if (response.ok) {
+                const createdIssue = await response.json();
+                
+                if (imageFile) {
+                    const formData = new FormData();
+                    formData.append('file', imageFile);
+
+                    await fetch(`/api/issues/${createdIssue.id}/upload-image`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                }
+
+                alert("Harika! Bildiriminiz başarıyla sisteme iletildi.");
+                document.getElementById('issueForm').reset(); 
+                
+                // YENİ EKLEME: İşlem bittikten sonra listeyi otomatik güncelle!
+                loadIssues(); 
+
+            } else {
+                alert("Bir hata oluştu. Lütfen bilgileri kontrol edin.");
+            }
+        } catch (error) {
+            console.error("API Bağlantı Hatası:", error);
+            alert("Sunucuya ulaşılamıyor.");
+        }
+    });
+</script>
+
+</body>
+</html>

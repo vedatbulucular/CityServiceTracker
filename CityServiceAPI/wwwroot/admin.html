@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetim Paneli - Personel Girişi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+
+<div class="container mt-5">
+    <div class="row justify-content-center" id="loginSection">
+        <div class="col-md-5">
+            <div class="card shadow-lg bg-light text-dark">
+                <div class="card-header bg-danger text-white text-center">
+                    <h4>Yetkili Personel Girişi</h4>
+                </div>
+                <div class="card-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label class="form-label">E-Posta</label>
+                            <input type="email" class="form-control" id="email" value="ayse.kaya@belediye.gov.tr" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Şifre</label>
+                            <input type="password" class="form-control" id="password" value="gizlisifre123" required>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Giriş Yap</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboardSection" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+            <h2>Operasyon Merkezi</h2>
+            <button class="btn btn-outline-light" onclick="logout()">Çıkış Yap</button>
+        </div>
+        
+        <div class="row" id="adminIssuesContainer">
+            </div>
+    </div>
+</div>
+
+<script>
+    // 1. GİRİŞ YAPMA VE TOKEN ALMA İŞLEMİ
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: password })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Sistemin verdiği o uzun Token'ı tarayıcının hafızasına (Kasa) kaydediyoruz
+                localStorage.setItem('jwtToken', data.token); 
+                
+                alert("Giriş başarılı! Yönetim paneline yönlendiriliyorsunuz.");
+                
+                // Giriş ekranını gizle, Paneli göster
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'block';
+                
+                loadAdminIssues(); // Verileri getir
+            } else {
+                alert("Hatalı e-posta veya şifre!");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Sunucuya bağlanılamadı.");
+        }
+    });
+
+    // 2. BEKLEYEN SORUNLARI GETİRME
+    async function loadAdminIssues() {
+        const response = await fetch('/api/issues');
+        if(response.ok) {
+            const issues = await response.json();
+            const container = document.getElementById('adminIssuesContainer');
+            container.innerHTML = '';
+
+            issues.forEach(issue => {
+                // Sadece "Pending" (Bekleyen) görevleri gösterelim
+                if(issue.status === 'Pending') {
+                    const card = `
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light text-dark h-100">
+                                <div class="card-body">
+                                    <h5 class="text-danger">${issue.title}</h5>
+                                    <p>${issue.description}</p>
+                                    <hr>
+                                    <button class="btn btn-warning w-100" onclick="assignTask(${issue.id})">
+                                        Görevi Üstlen (Personel ID: 2)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                }
+            });
+        }
+    }
+
+    // 3. KİLİTLİ KAPIYI TOKEN İLE AÇMA (GÖREV ATAMA)
+    async function assignTask(issueId) {
+        // Tarayıcının kasasından Token'ı alıyoruz
+        const token = localStorage.getItem('jwtToken'); 
+        
+        try {
+            const response = await fetch(`/api/issues/${issueId}/assign/2`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // JWT Kalkanını aşmak için Bearer formatında Token'ı yolluyoruz!
+                    'Authorization': `Bearer ${token}` 
+                }
+            });
+
+            if(response.ok) {
+                alert("Görev başarıyla üstlenildi ve durumu güncellendi!");
+                loadAdminIssues(); // Listeyi yenile (üstlenilen görev ekrandan kaybolur)
+            } else {
+                alert("Yetkiniz yok veya bir hata oluştu! (401 Unauthorized)");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    // 4. ÇIKIŞ YAPMA
+    function logout() {
+        localStorage.removeItem('jwtToken'); // Kasayı boşalt
+        location.reload(); // Sayfayı yenile
+    }
+</script>
+
+</body>
+</html>

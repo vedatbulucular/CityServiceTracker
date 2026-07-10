@@ -24,5 +24,21 @@ namespace CityServiceAPI.Controllers
             var categories = await _context.Categories.ToListAsync();
             return Ok(categories);
         }
+
+        // POST: api/Categories
+        // Sisteme dışarıdan (veya .http dosyasından) yeni bir kategori eklenmesini sağlar
+        [HttpPost]
+        public async Task<IActionResult> CreateCategory([FromBody] Category newCategory)
+        {
+            if (newCategory == null) 
+            {
+                return BadRequest("Kategori verisi boş olamaz.");
+            }
+
+            _context.Categories.Add(newCategory);
+            await _context.SaveChangesAsync();
+
+            return Ok(newCategory);
+        }
     }
 }

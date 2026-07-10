@@ -6,43 +6,54 @@
 ### 1. KURULUM VE KİMLİK DOĞRULAMA (AUTH)
 ### ==========================================
 
-### 1.1 Sisteme Yeni Bir Personel Ekle (POST)
-# Veritabanı sıfırlandığı için önce Ayşe'yi kaydediyoruz
+### 1.1 Sisteme Yeni Yönetici Ekle (ÖNCE BUNU ÇALIŞTIR)
+# Bozuk kayıt ihtimaline karşı tertemiz bir admin hesabı açıyoruz
 POST {{CityServiceAPI_HostAddress}}/api/users
 Content-Type: application/json
 
 {
-  "firstName": "Ayşe",
-  "lastName": "Kaya",
-  "email": "ayse.kaya@belediye.gov.tr",
-  "password": "GuvenliSifre2026!",
+  "firstName": "Sistem",
+  "lastName": "Yöneticisi",
+  "email": "admin@belediye.gov.tr",
+  "password": "AdminSifresi2026!",
   "role": "Staff"
 }
 
-### 1.2 Sisteme Giriş Yap ve Token Al (POST)
-# Eklediğimiz aynı şifreyle giriş yapıyoruz
+### 1.2 Sisteme Giriş Yap ve Token Al
 POST {{CityServiceAPI_HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "ayse.kaya@belediye.gov.tr",
-  "password": "GuvenliSifre2026!"
+  "email": "admin@belediye.gov.tr",
+  "password": "AdminSifresi2026!"
 }
 
-### 1.3 Tüm Kullanıcıları Getir (GET)
+### 1.3 Tüm Kullanıcıları Getir
 GET {{CityServiceAPI_HostAddress}}/api/users
 Accept: application/json
 
 
 ### ==========================================
-### 2. SORUN (ISSUE) YÖNETİMİ
+### 2. KATEGORİ VE SORUN (ISSUE) YÖNETİMİ
 ### ==========================================
 
-### 2.1 Tüm Kategorileri Getir (GET)
+### 2.1 Sisteme Kategori Ekle (Sorun eklemeden önce GEREKLİDİR)
+# Veritabanı sıfırlandığı için "Aydınlatma" kategorisini yeniden oluşturuyoruz
+POST {{CityServiceAPI_HostAddress}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "Aydınlatma",
+  "departmentName": "Fen İşleri",
+  "expectedResolutionHours": 48
+}
+
+### 2.2 Tüm Kategorileri Getir
 GET {{CityServiceAPI_HostAddress}}/api/categories
 Accept: application/json
 
-### 2.2 Yeni Bir Sorun Ekle (POST)
+### 2.3 Yeni Bir Sorun Ekle
+# citizenId: 1 (Oluşturduğumuz Admin) ve categoryId: 1 (Aydınlatma) eşleşiyor
 POST {{CityServiceAPI_HostAddress}}/api/issues
 Content-Type: application/json
 
@@ -55,17 +66,16 @@ Content-Type: application/json
   "gpsLocation": "40.8222, 29.3733"
 }
 
-### 2.3 Tüm Sorunları Getir (GET)
+### 2.4 Tüm Sorunları Getir
 GET {{CityServiceAPI_HostAddress}}/api/issues
 Accept: application/json
 
-### 2.4 Sorunu Personele Ata (POST) - GÜVENLİ JWT İLE
-# Not: Sondaki /2 kaldırıldı. Personel bilgisi artık verdiğimiz Token'dan otomatik alınıyor.
+### 2.5 Sorunu Personele Ata (GÜVENLİ JWT İLE)
 POST {{CityServiceAPI_HostAddress}}/api/issues/1/assign
 Content-Type: application/json
 Authorization: Bearer {{Token}}
 
-### 2.5 Bir Soruna Fotoğraf Ekle (POST)
+### 2.6 Bir Soruna Fotoğraf Ekle
 POST {{CityServiceAPI_HostAddress}}/api/issues/1/upload-image
 Content-Type: multipart/form-data; boundary=----MyGreatBoundary
 
@@ -76,5 +86,35 @@ Content-Type: image/jpeg
 < ./test.jpg
 ------MyGreatBoundary--
 
-### 2.6 Bir Sorunu Sil (DELETE)
+### 2.7 Bir Sorunu Sil
 DELETE {{CityServiceAPI_HostAddress}}/api/issues/1
+
+### Kategori 1: Altyapı (ID: 1 olacaktır)
+POST {{CityServiceAPI_HostAddress}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "Altyapı (Pothole vb.)",
+  "departmentName": "Fen İşleri",
+  "expectedResolutionHours": 72
+}
+
+### Kategori 2: Çevre ve Temizlik (ID: 2 olacaktır)
+POST {{CityServiceAPI_HostAddress}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "Çevre ve Temizlik",
+  "departmentName": "Temizlik İşleri",
+  "expectedResolutionHours": 24
+}
+
+### Kategori 3: Aydınlatma (ID: 3 olacaktır)
+POST {{CityServiceAPI_HostAddress}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "Aydınlatma",
+  "departmentName": "Park ve Bahçeler",
+  "expectedResolutionHours": 48
+}

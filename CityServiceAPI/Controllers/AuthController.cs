@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using CityServiceAPI.Data;
+using BCrypt.Net; // BCrypt şifre doğrulama kütüphanesi
 
 namespace CityServiceAPI.Controllers
 {
@@ -25,12 +26,15 @@ namespace CityServiceAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // 1. Veritabanında e-posta ve şifreye uyan kullanıcıyı ara
-            var user = await _context.Users.FirstOrDefaultAsync(u => 
-                u.Email == request.Email && u.PasswordHash == request.Password);
+            // 1. Veritabanında sadece e-postaya göre kullanıcıyı bul
+            //    (Şifreyi burada karşılaştırmıyoruz — BCrypt bunu güvenle yapacak)
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Email == request.Email);
 
-            // 2. Kullanıcı bulunamazsa Hata dön
-            if (user == null)
+            // 2. Kullanıcı yoksa VEYA BCrypt şifre doğrulaması başarısızsa hata dön.
+            //    BCrypt.Verify: gelen düz şifreyi, DB'deki hash ile karşılaştırır.
+            //    Zamanlama saldırılarına (timing attack) karşı güvenli.
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 return Unauthorized("Geçersiz e-posta veya şifre.");
             }
@@ -68,7 +72,7 @@ namespace CityServiceAPI.Controllers
     // İstemciden gelecek olan giriş bilgilerini tutacak basit bir model
     public class LoginRequest
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public required string Email { get; set; }
+        public required string Password { get; set; }
     }
 }

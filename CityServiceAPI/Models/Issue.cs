@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace CityServiceAPI.Models;
@@ -22,6 +22,13 @@ public partial class Issue
     public string? Status { get; set; }
 
     public DateTime? ReportedAt { get; set; }
+
+    /// <summary>
+    /// Tarayıcı Geolocation API'sinden alınan GPS koordinatları.
+    /// Format: "enlem,boylam" (örn: "40.7765,29.9256")
+    /// Nullable — kullanıcı konum iznini reddetmiş olabilir.
+    /// </summary>
+    public string? GpsLocation { get; set; }
 
     public virtual ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 

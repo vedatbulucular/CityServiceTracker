@@ -3,178 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bölge Hizmet Yönetimi - Çayırova</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>CityServiceTracker — Bölge Hizmet Yönetimi</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a2332 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        /* ── Dekoratif arka plan parçacıkları ── */
+        .bg-decoration {
+            position: fixed; inset: 0; z-index: 0;
+            overflow: hidden; pointer-events: none;
+        }
+        .bg-decoration span {
+            position: absolute;
+            border-radius: 50%;
+            opacity: .06;
+            animation: float linear infinite;
+        }
+        .bg-decoration span:nth-child(1) { width:300px; height:300px; background:#18bc9c; top:-80px; left:-80px; animation-duration:18s; }
+        .bg-decoration span:nth-child(2) { width:200px; height:200px; background:#3498db; top:40%; right:-60px; animation-duration:24s; animation-delay:-6s; }
+        .bg-decoration span:nth-child(3) { width:150px; height:150px; background:#e74c3c; bottom:10%; left:20%; animation-duration:20s; animation-delay:-10s; }
+        .bg-decoration span:nth-child(4) { width:80px;  height:80px;  background:#f39c12; bottom:20%; right:15%; animation-duration:15s; animation-delay:-3s; }
+        @keyframes float {
+            0%,100% { transform: translateY(0) rotate(0deg); }
+            50%      { transform: translateY(-30px) rotate(180deg); }
+        }
+
+        /* ── Ana içerik ── */
+        .landing-content {
+            position: relative; z-index: 1;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        /* ── Logo/Başlık ── */
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .6rem;
+            background: rgba(24,188,156,.15);
+            border: 1px solid rgba(24,188,156,.3);
+            color: #18bc9c;
+            padding: .4rem 1.2rem;
+            border-radius: 2rem;
+            font-size: .85rem;
+            font-weight: 600;
+            letter-spacing: .5px;
+            margin-bottom: 1.5rem;
+        }
+        .hero-title {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            color: #fff;
+            text-align: center;
+            line-height: 1.15;
+            margin-bottom: .75rem;
+        }
+        .hero-title .accent { color: #18bc9c; }
+        .hero-subtitle {
+            color: rgba(255,255,255,.6);
+            font-size: 1.1rem;
+            text-align: center;
+            max-width: 520px;
+            margin-bottom: 3.5rem;
+        }
+
+        /* ── Portal Kartları ── */
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.75rem;
+            width: 100%;
+            max-width: 720px;
+        }
+        .portal-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            padding: 2.5rem 2rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform .25s ease, box-shadow .25s ease;
+            border: 1px solid rgba(255,255,255,.08);
+        }
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity .25s ease;
+        }
+        .portal-card:hover { transform: translateY(-8px); }
+        .portal-card:hover::before { opacity: 1; }
+        .portal-card:active { transform: translateY(-4px); }
+
+        /* Vatandaş kartı */
+        .portal-card.citizen {
+            background: linear-gradient(135deg, #0d5c4a 0%, #18bc9c 100%);
+            box-shadow: 0 8px 32px rgba(24,188,156,.25);
+        }
+        .portal-card.citizen::before {
+            background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, transparent 100%);
+        }
+        .portal-card.citizen:hover {
+            box-shadow: 0 20px 50px rgba(24,188,156,.45);
+        }
+
+        /* Personel kartı */
+        .portal-card.admin {
+            background: linear-gradient(135deg, #7b1a13 0%, #e74c3c 100%);
+            box-shadow: 0 8px 32px rgba(231,76,60,.25);
+        }
+        .portal-card.admin::before {
+            background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, transparent 100%);
+        }
+        .portal-card.admin:hover {
+            box-shadow: 0 20px 50px rgba(231,76,60,.45);
+        }
+
+        /* Kart içi */
+        .portal-icon {
+            font-size: 3rem;
+            color: rgba(255,255,255,.9);
+            margin-bottom: 1.25rem;
+            display: block;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,.2));
+        }
+        .portal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: .5rem;
+        }
+        .portal-desc {
+            color: rgba(255,255,255,.75);
+            font-size: .9rem;
+            line-height: 1.55;
+            margin-bottom: 1.5rem;
+        }
+        .portal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            border: 1.5px solid rgba(255,255,255,.4);
+            padding: .55rem 1.4rem;
+            border-radius: 2rem;
+            font-size: .9rem;
+            font-weight: 600;
+            transition: background .2s, border-color .2s;
+        }
+        .portal-card:hover .portal-btn {
+            background: rgba(255,255,255,.3);
+            border-color: rgba(255,255,255,.7);
+        }
+
+        /* Köşe dekor ikon */
+        .portal-bg-icon {
+            position: absolute;
+            bottom: -20px; right: -20px;
+            font-size: 7rem;
+            color: rgba(255,255,255,.06);
+            pointer-events: none;
+        }
+
+        /* ── İstatistik bantı ── */
+        .stats-bar {
+            display: flex;
+            gap: 2.5rem;
+            margin-top: 3.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .stat-item { text-align: center; }
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #18bc9c;
+        }
+        .stat-label {
+            font-size: .78rem;
+            color: rgba(255,255,255,.45);
+            letter-spacing: .4px;
+            text-transform: uppercase;
+        }
+
+        /* ── Footer ── */
+        footer {
+            position: relative; z-index: 1;
+            text-align: center;
+            padding: 1rem;
+            color: rgba(255,255,255,.3);
+            font-size: .78rem;
+        }
+        footer a { color: rgba(24,188,156,.7); text-decoration: none; }
+
+        @media (max-width: 480px) {
+            .portal-grid { grid-template-columns: 1fr; max-width: 340px; }
+            .stats-bar { gap: 1.5rem; }
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
-<div class="container mt-5 mb-5">
-    <div class="row justify-content-center mb-5">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white text-center">
-                    <h4>Yeni Sorun Bildir</h4>
-                    <p class="mb-0">Bölgemizdeki sorunları hızlıca yetkililere iletin</p>
-                </div>
-                <div class="card-body">
-                    <form id="issueForm">
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Sorun Başlığı</label>
-                            <input type="text" class="form-control" id="title" placeholder="Örn: Yolda büyük bir çukur var" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Detaylı Açıklama</label>
-                            <textarea class="form-control" id="description" rows="3" placeholder="Sorunu detaylıca anlatın..." required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="category" class="form-label">Kategori</label>
-                            <select class="form-select" id="category" required>
-                                <option value="" selected disabled>Kategori Seçin...</option>
-                                <option value="1">Altyapı (Pothole vb.)</option>
-                                <option value="2">Park ve Bahçeler</option>
-                                <option value="3">Temizlik</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="imageFile" class="form-label">Fotoğraf Ekle (İsteğe Bağlı)</label>
-                            <input class="form-control" type="file" id="imageFile" accept="image/jpeg, image/png">
-                        </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg">Bildirimi Gönder</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12 text-center mb-4">
-            <h3 class="text-secondary border-bottom pb-2">Güncel Bildirimler</h3>
-        </div>
-    </div>
-
-    <div class="row" id="issuesContainer">
-        <div class="text-center text-muted">Kayıtlar yükleniyor...</div>
-    </div>
+<!-- Dekoratif arka plan -->
+<div class="bg-decoration">
+    <span></span><span></span><span></span><span></span>
 </div>
 
+<div class="landing-content">
+
+    <!-- Marka rozeti -->
+    <div class="brand-badge">
+        <i class="fa-solid fa-city"></i>
+        CityServiceTracker v1.0
+    </div>
+
+    <!-- Başlık -->
+    <h1 class="hero-title">
+        Bölge Hizmet<br><span class="accent">Yönetim Sistemi</span>
+    </h1>
+    <p class="hero-subtitle">
+        Çayırova Belediyesi'nin dijital hizmet platformuna hoş geldiniz.
+        Sorunlarınızı bildirin veya yönetim paneline erişin.
+    </p>
+
+    <!-- Portal Kartları -->
+    <div class="portal-grid">
+
+        <!-- Vatandaş Portalı -->
+        <a href="citizen.html" class="portal-card citizen">
+            <i class="fa-solid fa-users portal-icon"></i>
+            <div class="portal-title">Vatandaş Portalı</div>
+            <p class="portal-desc">
+                Bölgenizdeki altyapı, temizlik veya park sorunlarını
+                fotoğraf ve GPS konum desteğiyle hızlıca bildirin.
+            </p>
+            <span class="portal-btn">
+                Sorun Bildir <i class="fa-solid fa-arrow-right"></i>
+            </span>
+            <i class="fa-solid fa-map-location-dot portal-bg-icon"></i>
+        </a>
+
+        <!-- Personel Paneli -->
+        <a href="admin.html" class="portal-card admin">
+            <i class="fa-solid fa-shield-halved portal-icon"></i>
+            <div class="portal-title">Personel Paneli</div>
+            <p class="portal-desc">
+                Yetkili belediye personeli girişi. Bekleyen görevleri
+                görüntüleyin, üstlenin ve haritada konumuna gidin.
+            </p>
+            <span class="portal-btn">
+                Giriş Yap <i class="fa-solid fa-arrow-right"></i>
+            </span>
+            <i class="fa-solid fa-gears portal-bg-icon"></i>
+        </a>
+
+    </div>
+
+    <!-- İstatistik bantı -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="statTotal">—</div>
+            <div class="stat-label">Toplam Bildirim</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="statPending">—</div>
+            <div class="stat-label">Beklemede</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="statInProgress">—</div>
+            <div class="stat-label">İşlemde</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="statDone">—</div>
+            <div class="stat-label">Tamamlandı</div>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    &copy; 2026 CityServiceTracker &mdash; Çayırova Belediyesi &nbsp;|&nbsp;
+    <a href="https://github.com">GitHub</a>
+</footer>
+
 <script>
-    // 1. VERİLERİ API'DEN ÇEKİP EKRANA ÇİZEN FONKSİYON (GET)
-    async function loadIssues() {
+    // Gerçek zamanlı istatistikleri API'den çek
+    async function loadStats() {
         try {
-            const response = await fetch('/api/issues');
-            if (response.ok) {
-                const issues = await response.json();
-                const container = document.getElementById('issuesContainer');
-                
-                // İçeriyi temizle
-                container.innerHTML = ''; 
+            const res = await fetch('/api/issues');
+            if (!res.ok) return;
+            const issues = await res.json();
 
-                // Eğer hiç kayıt yoksa
-                if(issues.length === 0) {
-                    container.innerHTML = '<div class="text-center text-muted">Henüz bildirilmiş bir sorun bulunmuyor.</div>';
-                    return;
-                }
-
-                // API'den gelen her bir sorun (issue) için Bootstrap Kartı oluştur
-                issues.forEach(issue => {
-                    // Duruma göre renkli etiket (Badge) belirle
-                    let statusBadge = '';
-                    if(issue.status === 'Pending') statusBadge = '<span class="badge bg-warning text-dark">Beklemede</span>';
-                    else if(issue.status === 'InProgress') statusBadge = '<span class="badge bg-info text-dark">İşlemde</span>';
-                    else statusBadge = '<span class="badge bg-success">Tamamlandı</span>';
-
-                    // Fotoğraf varsa URL'yi kullan, yoksa gri bir 'Görsel Yok' alanı göster
-                    const imageHtml = issue.imageUrl 
-                        ? `<img src="${issue.imageUrl}" class="card-img-top" alt="Sorun Görseli" style="height: 200px; object-fit: cover;">` 
-                        : `<div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">Görsel Yok</div>`;
-
-                    // Tarihi Türkiye formatına çevir
-                    const formattedDate = new Date(issue.reportedAt).toLocaleDateString('tr-TR');
-
-                    // Kartın HTML şablonu
-                    const card = `
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 shadow-sm border-0">
-                                ${imageHtml}
-                                <div class="card-body">
-                                    <h5 class="card-title">${issue.title}</h5>
-                                    <p class="card-text text-muted small">${issue.description}</p>
-                                    <p class="card-text"><small><strong>Konum:</strong> ${issue.locationData}</small></p>
-                                </div>
-                                <div class="card-footer d-flex justify-content-between align-items-center bg-white border-top-0">
-                                    ${statusBadge}
-                                    <small class="text-muted">${formattedDate}</small>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // Oluşturulan kartı sayfaya ekle
-                    container.innerHTML += card;
-                });
-            }
-        } catch (error) {
-            console.error("Veriler çekilirken hata oluştu:", error);
-            document.getElementById('issuesContainer').innerHTML = '<div class="text-center text-danger">Sunucuya bağlanılamadı.</div>';
+            document.getElementById('statTotal').textContent      = issues.length;
+            document.getElementById('statPending').textContent    = issues.filter(i => i.status === 'Pending').length;
+            document.getElementById('statInProgress').textContent = issues.filter(i => i.status === 'InProgress').length;
+            document.getElementById('statDone').textContent       = issues.filter(i => i.status === 'Completed').length;
+        } catch (_) {
+            // API erişilemiyorsa sayaçlar — olarak kalır
         }
     }
-
-    // Sayfa ilk açıldığında verileri otomatik yükle
-    window.onload = loadIssues;
-
-    // 2. YENİ KAYIT EKLEME FONKSİYONU (POST)
-    document.getElementById('issueForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const title = document.getElementById('title').value;
-        const description = document.getElementById('description').value;
-        const categoryId = document.getElementById('category').value;
-        const imageFile = document.getElementById('imageFile').files[0];
-
-        const issueData = {
-            citizenId: 1, 
-            categoryId: parseInt(categoryId),
-            title: title,
-            description: description,
-            locationData: "Çayırova" 
-        };
-
-        try {
-            const response = await fetch('/api/issues', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(issueData)
-            });
-
-            if (response.ok) {
-                const createdIssue = await response.json();
-                
-                if (imageFile) {
-                    const formData = new FormData();
-                    formData.append('file', imageFile);
-
-                    await fetch(`/api/issues/${createdIssue.id}/upload-image`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                }
-
-                alert("Harika! Bildiriminiz başarıyla sisteme iletildi.");
-                document.getElementById('issueForm').reset(); 
-                
-                // YENİ EKLEME: İşlem bittikten sonra listeyi otomatik güncelle!
-                loadIssues(); 
-
-            } else {
-                alert("Bir hata oluştu. Lütfen bilgileri kontrol edin.");
-            }
-        } catch (error) {
-            console.error("API Bağlantı Hatası:", error);
-            alert("Sunucuya ulaşılamıyor.");
-        }
-    });
+    loadStats();
 </script>
 
 </body>

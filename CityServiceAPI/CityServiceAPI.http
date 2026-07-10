@@ -1,10 +1,48 @@
 @CityServiceAPI_HostAddress = http://localhost:5065
+# Token'ı login olduktan sonra kopyalayıp buraya yapıştırabilirsin
+@Token = BURAYA_ALDIGIN_UZUN_TOKEN_GELECEK
 
-### Tüm Sorunları Getir (GET İstediği)
-GET {{CityServiceAPI_HostAddress}}/api/issues
+### ==========================================
+### 1. KURULUM VE KİMLİK DOĞRULAMA (AUTH)
+### ==========================================
+
+### 1.1 Sisteme Yeni Bir Personel Ekle (POST)
+# Veritabanı sıfırlandığı için önce Ayşe'yi kaydediyoruz
+POST {{CityServiceAPI_HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "firstName": "Ayşe",
+  "lastName": "Kaya",
+  "email": "ayse.kaya@belediye.gov.tr",
+  "password": "GuvenliSifre2026!",
+  "role": "Staff"
+}
+
+### 1.2 Sisteme Giriş Yap ve Token Al (POST)
+# Eklediğimiz aynı şifreyle giriş yapıyoruz
+POST {{CityServiceAPI_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ayse.kaya@belediye.gov.tr",
+  "password": "GuvenliSifre2026!"
+}
+
+### 1.3 Tüm Kullanıcıları Getir (GET)
+GET {{CityServiceAPI_HostAddress}}/api/users
 Accept: application/json
 
-### Yeni Bir Sorun Ekle (POST İstediği)
+
+### ==========================================
+### 2. SORUN (ISSUE) YÖNETİMİ
+### ==========================================
+
+### 2.1 Tüm Kategorileri Getir (GET)
+GET {{CityServiceAPI_HostAddress}}/api/categories
+Accept: application/json
+
+### 2.2 Yeni Bir Sorun Ekle (POST)
 POST {{CityServiceAPI_HostAddress}}/api/issues
 Content-Type: application/json
 
@@ -13,42 +51,22 @@ Content-Type: application/json
   "categoryId": 1,
   "title": "Park aydınlatması çalışmıyor",
   "description": "Gece saatlerinde park tamamen karanlık kalıyor, çocuklar için güvenlik riski oluşturuyor.",
-  "locationData": "Özgürlük Mahallesi, Fatih Caddesi, Çayırova"
+  "locationData": "Özgürlük Mahallesi, Fatih Caddesi, Çayırova",
+  "gpsLocation": "40.8222, 29.3733"
 }
 
-### Sorunu Personele Ata (POST İstediği) - KİLİT AÇIK
-# 2 numaralı sorunu, 2 numaralı personele atıyoruz
-POST {{CityServiceAPI_HostAddress}}/api/issues/2/assign/2
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxMDAyIiwiZW1haWwiOiJheXNlLmtheWFAYmVsZWRpeWUuZ292LnRyIiwicm9sZSI6IlN0YWZmIiwibmJmIjoxNzgzNTgyNTE1LCJleHAiOjE3ODM1ODYxMTUsImlhdCI6MTc4MzU4MjUxNSwiaXNzIjoiQ2l0eVNlcnZpY2VBUEkiLCJhdWQiOiJDaXR5U2VydmljZUNsaWVudHMifQ.qyoOCquvNMEXUh8JFjrWWmnfpL2j3-FrddQB0yxUxgQ
-
-### Bir Sorunu Sil (DELETE İsteği)
-# 1 numaralı sorunu (Yolda büyük bir çukur var) sistemden siliyoruz.
-DELETE {{CityServiceAPI_HostAddress}}/api/issues/1
-
-### Tüm Kategorileri Getir (GET İstediği)
-GET {{CityServiceAPI_HostAddress}}/api/categories
+### 2.3 Tüm Sorunları Getir (GET)
+GET {{CityServiceAPI_HostAddress}}/api/issues
 Accept: application/json
 
-### Tüm Kullanıcıları Getir (GET İstediği)
-GET {{CityServiceAPI_HostAddress}}/api/users
-Accept: application/json
-
-### Sisteme Yeni Bir Personel Ekle (POST İstediği)
-POST {{CityServiceAPI_HostAddress}}/api/users
+### 2.4 Sorunu Personele Ata (POST) - GÜVENLİ JWT İLE
+# Not: Sondaki /2 kaldırıldı. Personel bilgisi artık verdiğimiz Token'dan otomatik alınıyor.
+POST {{CityServiceAPI_HostAddress}}/api/issues/1/assign
 Content-Type: application/json
+Authorization: Bearer {{Token}}
 
-{
-  "firstName": "Ayşe",
-  "lastName": "Kaya",
-  "email": "ayse.kaya@belediye.gov.tr",
-  "passwordHash": "gizlisifre123",
-  "role": "Staff"
-}
-
-### Bir Soruna Fotoğraf Ekle (POST İstediği)
-# 2 numaralı soruna test.jpg dosyasını yüklüyoruz
-POST {{CityServiceAPI_HostAddress}}/api/issues/2/upload-image
+### 2.5 Bir Soruna Fotoğraf Ekle (POST)
+POST {{CityServiceAPI_HostAddress}}/api/issues/1/upload-image
 Content-Type: multipart/form-data; boundary=----MyGreatBoundary
 
 ------MyGreatBoundary
@@ -58,12 +76,5 @@ Content-Type: image/jpeg
 < ./test.jpg
 ------MyGreatBoundary--
 
-### Sisteme Giriş Yap ve Token Al (POST)
-# Daha önce eklediğimiz "Ayşe Kaya" (Staff) kullanıcısının bilgileriyle giriş yapıyoruz
-POST {{CityServiceAPI_HostAddress}}/api/auth/login
-Content-Type: application/json
-
-{
-  "email": "ayse.kaya@belediye.gov.tr",
-  "password": "gizlisifre123"
-}
+### 2.6 Bir Sorunu Sil (DELETE)
+DELETE {{CityServiceAPI_HostAddress}}/api/issues/1

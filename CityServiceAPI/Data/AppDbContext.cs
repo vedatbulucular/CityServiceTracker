@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using CityServiceAPI.Models;
 using Microsoft.EntityFrameworkCore;
@@ -60,6 +60,7 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.ImageUrl).HasMaxLength(500);
             entity.Property(e => e.LocationData).HasMaxLength(200);
+            entity.Property(e => e.GpsLocation).HasMaxLength(100); // "enlem,boylam" formatı
             entity.Property(e => e.ReportedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");

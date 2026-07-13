@@ -7,6 +7,27 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CityServiceAPI.Data;
 using CityServiceAPI.Repositories;
+using DotNetEnv;
+
+// ═══════════════════════════════════════════════════════════════
+// 0. .ENV DOSYASINI YÜKLE (Builder oluşmadan önce çalışmalı)
+//
+//    .env dosyasındaki değerler Environment Variable'lara yüklenir.
+//    ASP.NET Core Configuration, "Jwt__Key" env var'ını "Jwt:Key"
+//    olarak çift alt çizgi (__)  separator kuralıyla otomatik tanır.
+//
+//    Öncelik sırası (en yüksekten en düşüğe):
+//      1. Gerçek sistem env var'ları  (Production sunucusu)
+//      2. .env dosyası               (Yerel geliştirme ortamı)
+//      3. appsettings.json           (Genel/gizli olmayan config)
+//
+//    overwriteExistingVars: false → sistemde zaten var olan env
+//    var'larını ezlemez; Production'da bu kritiktir.
+// ═══════════════════════════════════════════════════════════════
+// Env.NoOverwrite(): Sistemde zaten var olan env var'larını ezmez.
+// Bu sayede Production sunucusundaki gerçek env var'ları korunur,
+// .env dosyası sadece yerel geliştirme ortamı için devreye girer.
+Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +48,18 @@ builder.Services.AddScoped<IIssueRepository, IssueRepository>();
 // ═══════════════════════════════════════════════════════════════
 // 3. JWT KİMLİK DOĞRULAMA
 // ═══════════════════════════════════════════════════════════════
+
+// Güvenlik Validasyonu: JWT Key yoksa uygulama başlamayı reddeder.
+// Bu "fail fast" prensibidir — hatalı config ile production'a çıkmayı önler.
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException(
+        "[GÜVENLİK HATASI] JWT anahtarı (Jwt:Key) tanımlanmamış! " +
+        "Lütfen .env dosyasında 'Jwt__Key' değişkenini ayarlayın. " +
+        "Örnek: .env.example dosyasına bakın.");
+}
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -39,7 +72,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer              = builder.Configuration["Jwt:Issuer"],
             ValidAudience            = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey         = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 

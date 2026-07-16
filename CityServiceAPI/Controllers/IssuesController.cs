@@ -136,6 +136,13 @@ public class IssuesController : ControllerBase
         // Orijinal dosya adı HİÇ kullanılmıyor — sadece GUID + whitelist'ten geçen uzantı
         var uniqueFileName = Guid.NewGuid().ToString() + fileExtension.ToLower();
         var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+
+        // Klasör yoksa oluştur
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
         var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
         await using var fileStream = new FileStream(filePath, FileMode.Create);

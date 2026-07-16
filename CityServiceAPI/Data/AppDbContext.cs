@@ -52,6 +52,13 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.DepartmentName).HasMaxLength(100);
             entity.Property(e => e.Name).HasMaxLength(100);
+
+            // Başlangıç Verileri (Data Seeding)
+            entity.HasData(
+                new Category { Id = 1, Name = "Altyapı (Pothole vb.)", DepartmentName = "Fen İşleri", ExpectedResolutionHours = 48 },
+                new Category { Id = 2, Name = "Park ve Bahçeler", DepartmentName = "Park ve Bahçeler", ExpectedResolutionHours = 24 },
+                new Category { Id = 3, Name = "Temizlik", DepartmentName = "Temizlik İşleri", ExpectedResolutionHours = 12 }
+            );
         });
 
         modelBuilder.Entity<Issue>(entity =>
@@ -93,6 +100,19 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.FirstName).HasMaxLength(50);
             entity.Property(e => e.LastName).HasMaxLength(50);
             entity.Property(e => e.Role).HasMaxLength(20);
+
+            // Başlangıç Verileri (Test Vatandaşı)
+            entity.HasData(
+                new User
+                {
+                    Id = 1,
+                    FirstName = "Test",
+                    LastName = "Vatandaş",
+                    Email = "test@vatandas.com",
+                    PasswordHash = "$2a$11$DummyHashDummyHashDummyHashDummyHashDummyHashDumm", // Rastgele sahte hash
+                    Role = "Citizen"
+                }
+            );
         });
 
         OnModelCreatingPartial(modelBuilder);

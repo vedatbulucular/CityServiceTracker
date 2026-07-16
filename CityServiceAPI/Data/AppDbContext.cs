@@ -101,7 +101,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.LastName).HasMaxLength(50);
             entity.Property(e => e.Role).HasMaxLength(20);
 
-            // Başlangıç Verileri (Test Vatandaşı)
+            // Başlangıç Verileri (Test Vatandaşı ve Sistem Yöneticisi)
             entity.HasData(
                 new User
                 {
@@ -111,6 +111,16 @@ public partial class AppDbContext : DbContext
                     Email = "test@vatandas.com",
                     PasswordHash = "$2a$11$DummyHashDummyHashDummyHashDummyHashDummyHashDumm", // Rastgele sahte hash
                     Role = "Citizen"
+                },
+                new User
+                {
+                    Id = 2,
+                    FirstName = "Sistem",
+                    LastName = "Yöneticisi",
+                    Email = "admin@belediye.gov.tr",
+                    // "admin123" şifresinin BCrypt karşılığı
+                    PasswordHash = "$2a$11$r47/VCQ1fjeXe7/Y9jjLJuEIV37KVQc0Sfd1Y8GpH1wX4ZDpjb46C", 
+                    Role = "Staff" // Uygulamanızdaki AuthController "Staff" rolünü beklemektedir
                 }
             );
         });
